@@ -57,8 +57,55 @@
   <h1>生活五角 · 互动测评系统</h1>
 
   <form id="assessmentForm">
-    <!-- 保留原有测评问题不变 -->
-    <!-- ...（原HTML部分略，为节省空间）... -->
+    <div class="section">
+      <h2>1. 自律之国 · 时间分配仪式</h2>
+      <label>学习 / 工作（小时）</label>
+      <input name="study" type="number" min="0" max="24">
+      <label>娱乐 / 休闲（小时）</label>
+      <input name="entertain" type="number" min="0" max="24">
+      <label>睡眠 / 休息（小时）</label>
+      <input name="sleep" type="number" min="0" max="24">
+      <label>运动 / 健康（小时）</label>
+      <input name="exercise" type="number" min="0" max="24">
+      <label>社交 / 家庭（小时）</label>
+      <input name="social" type="number" min="0" max="24">
+    </div>
+
+    <div class="section">
+      <h2>2. 自信之国 · 镜中试炼</h2>
+      <label>你在 500 人面前演讲会如何？</label>
+      <select name="confidence_speech">
+        <option value="0">不敢，能逃则逃</option>
+        <option value="2">紧张但愿意尝试</option>
+        <option value="4">相信自己可以胜任</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <h2>3. 自省之国 · 夜舟对话</h2>
+      <label>你最近一次后悔的决定是什么？你如何面对？</label>
+      <textarea name="reflection" rows="3"></textarea>
+    </div>
+
+    <div class="section">
+      <h2>4. 世界观之国 · 信仰水晶</h2>
+      <label>你更相信：</label>
+      <select name="worldview">
+        <option value="3">努力一定有结果</option>
+        <option value="1">命运决定一切</option>
+        <option value="2">两者都有</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <h2>5. 物质条件之国 · 平衡秤挑战</h2>
+      <label>如果家庭突然经济困难，你会？</label>
+      <select name="finance">
+        <option value="3">降低消费，努力适应</option>
+        <option value="1">抱怨命运，陷入焦虑</option>
+        <option value="4">主动想办法增加收入</option>
+      </select>
+    </div>
 
     <div class="section">
       <h2>6. 人际交往之国 · 心灵森林</h2>
@@ -94,32 +141,50 @@
   <script>
     document.getElementById("assessmentForm").addEventListener("submit", function (e) {
       e.preventDefault();
-
       let totalScore = 0;
-      let sections = 2; // 只示例处理两个模块，可扩展到全部7个
-
       const form = e.target;
 
-      // 人际交往打分
+      // 自律打分：工作学习 + 睡眠 >= 12h 为高自律
+      const study = parseInt(form.study.value || 0);
+      const sleep = parseInt(form.sleep.value || 0);
+      const selfDiscipline = (study + sleep >= 12) ? 4 : (study + sleep >= 8 ? 2 : 0);
+      totalScore += selfDiscipline;
+
+      // 自信打分
+      totalScore += parseInt(form.confidence_speech.value || 0);
+
+      // 自省打分：关键词判断
+      const reflectText = form.reflection.value.toLowerCase();
+      const reflectKeywords = ["反思", "改进", "成长", "承担", "负责"];
+      let selfInsight = 0;
+      reflectKeywords.forEach(k => { if (reflectText.includes(k)) selfInsight += 1; });
+      totalScore += selfInsight;
+
+      // 世界观
+      totalScore += parseInt(form.worldview.value || 0);
+
+      // 物质条件
+      totalScore += parseInt(form.finance.value || 0);
+
+      // 人际交往
       totalScore += parseInt(form.social_conflict.value || 0);
       totalScore += parseInt(form.social_value.value || 0);
 
-      // 兴趣爱好打分（通过关键词）
+      // 兴趣爱好
       const flowText = form.flow_description.value.toLowerCase();
       const hobbyText = form.hobby_dropout.value.toLowerCase();
-
       const flowKeywords = ["投入", "忘我", "时间流逝", "沉浸", "全神贯注"];
       const dropoutKeywords = ["没时间", "太难", "没兴趣", "放弃"];
-
       let flowScore = 0;
       flowKeywords.forEach(k => { if (flowText.includes(k)) flowScore += 1; });
       if (!dropoutKeywords.some(k => hobbyText.includes(k))) flowScore += 2;
-
       totalScore += flowScore;
 
-      // 最终平均得分
-      let avg = Math.round((totalScore / (sections * 6)) * 100);
-      document.getElementById("result").innerText = `您的部分幸福得分约为：${avg} / 100（仅示例打分，完整打分逻辑可继续拓展）`;
+      // 平均得分计算
+      let maxScore = 7 * 6; // 假设每项满分6分
+      let avg = Math.round((totalScore / maxScore) * 100);
+
+      document.getElementById("result").innerText = `您的生活五角幸福得分为：${avg} / 100`;
     });
   </script>
 </body>
